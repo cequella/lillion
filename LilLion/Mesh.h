@@ -31,6 +31,7 @@ enum class MeshEPF : USHORT {
 class Mesh final : public Asset {
 private:
 	friend class MeshBuilder;
+	friend class Prop3D;
 
 	UINT    _counter[4];
 	float*  _vertex;

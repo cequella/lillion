@@ -153,6 +153,7 @@
     <ClCompile Include="RawLoader.cpp" />
     <ClCompile Include="RawMethod.cpp" />
     <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="WavefrontObj.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -165,6 +166,7 @@
     <ClInclude Include="RawLoader.h" />
     <ClInclude Include="RawMethod.h" />
     <ClInclude Include="Scene.h" />
+    <ClInclude Include="WavefrontObj.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -68,7 +68,7 @@ Mesh* MeshBuilder::build() const noexcept {
 	const int COORD_PER_VERTEX  = 3;
 	const int COORD_PER_MAPPING = 2;
 	const int COORD_PER_NORMAL  = 3;
-	int       PARAM_PER_FACE    = 3; // Initially, 3 vertex per face
+	int       ELEMENTS_PER_FACE = 3; // Initially, 3 vertex per face
 
 	mesh->_vertex = new float[_vertex.size()];
 	memcpy(mesh->_vertex, _vertex.data(), _vertex.size() *sizeof(float));
@@ -77,19 +77,19 @@ Mesh* MeshBuilder::build() const noexcept {
 	memcpy(mesh->_face, _face.data(), _face.size() *sizeof(UINT));
 
 	if (not _mapping.empty()) {
-		PARAM_PER_FACE += 3; // 3 uv-vertex per face
+		ELEMENTS_PER_FACE += 3; // 3 uv-vertex per face
 		mesh->_mapping = new float[_mapping.size()];
 		memcpy(mesh->_mapping, _mapping.data(), _mapping.size() * sizeof(float));
 	}
 	if (not _normal.empty()) {
-		PARAM_PER_FACE++; // 1 normal per face
+		ELEMENTS_PER_FACE++; // 1 normal per face
 		mesh->_normal = new float[_normal.size()];
 		memcpy(mesh->_normal, _normal.data(), _normal.size() * sizeof(float));
 	}
 
-	mesh->_epf = static_cast<MeshEPF>(PARAM_PER_FACE);
+	mesh->_epf = static_cast<MeshEPF>(ELEMENTS_PER_FACE);
 	mesh->_counter[VERTEX_ID]  = _vertex.size()/COORD_PER_VERTEX;
-	mesh->_counter[FACE_ID]    = _face.size()/PARAM_PER_FACE;
+	mesh->_counter[FACE_ID]    = _face.size()/ ELEMENTS_PER_FACE;
 	mesh->_counter[NORMAL_ID]  = _normal.size()/COORD_PER_NORMAL;
 	mesh->_counter[MAPPING_ID] = _mapping.size()/COORD_PER_MAPPING;
 
