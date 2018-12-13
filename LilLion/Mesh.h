@@ -5,9 +5,10 @@
 #define NORMAL_ID  2
 #define MAPPING_ID 3
 
-#include <gl.h>
-
+#include <iostream>
 #include <string.h>
+
+#include <gl.h>
 
 #include "CustomTypes.h"
 #include "Asset.h"
@@ -41,7 +42,6 @@ private:
 	void _clearPointer(void* pointer) noexcept;
 public:
 	Mesh();
-	Mesh(const Mesh&);
 	~Mesh();
 
 	UINT vertex()  const noexcept { return _counter[VERTEX_ID]; }

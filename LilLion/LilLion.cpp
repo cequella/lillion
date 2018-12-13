@@ -70,68 +70,35 @@ public:
 
 class WavefronOBJLoader final : public RawMethod {
 private:
-	std::vector<float> _vertex  = {};
-	std::vector<float> _normal  = {};
-	std::vector<float> _mapping = {};
-	std::vector<UINT>  _face    = {};
+	MeshBuilder _builder =MeshBuilder();
 
 	void _addVertex(std::string line) noexcept {
-		/*
-		std::string s;
 		float v[3];
+		sscanf_s(line.c_str(), "%*c %f %f %f", &v[0], &v[1], &v[2]);
 
-		std::ostringstream stream(line);
-		stream << s << v[0] << v[1] << v[2];
-		*/
-		float v[3];
-		sscanf_s(line.c_str(), "%*s %f %f %f", &v[0], &v[1], &v[2]);
-
-		_vertex.push_back(v[0]);
-		_vertex.push_back(v[1]);
-		_vertex.push_back(v[2]);
+		_builder.addVertex(v[0], v[1], v[2]);
 	}
 	void _addNormal(std::string line) noexcept {
-		/*
-		std::string s;
 		float n[3];
+		sscanf_s(line.c_str(), "%*c%*c %f %f %f", &n[0], &n[1], &n[2]);
 
-		std::ostringstream stream(line);
-		stream << s << n[0] << n[1] << n[2];
-		*/
-		float n[3];
-		sscanf_s(line.c_str(), "%*s %f %f %f", &n[0], &n[1], &n[2]);
-
-		_normal.push_back(n[0]);
-		_normal.push_back(n[1]);
-		_normal.push_back(n[2]);
+		_builder.addNormal(n[0], n[1], n[2]);
 	}
 	void _addMapping(std::string line) noexcept {
-		/*
-		std::string s;
-		float m[2];
-
-		std::ostringstream stream(line);
-		stream << s << m[0] << m[1];
-		*/
 		float m[3];
-		sscanf_s(line.c_str(), "%*s %f %f", &m[0], &m[1]);
+		sscanf_s(line.c_str(), "%*c%*c %f %f", &m[0], &m[1]);
 
-		_mapping.push_back(m[0]);
-		_mapping.push_back(m[1]);
+		_builder.addMapping(m[0], m[1]);
 	}
 	void _addFace(std::string line) noexcept {
 		UINT f[7];
 		sscanf_s(line.c_str(), 
-				"%*s %d//%d//%d %d//%d//%*d %d//%d//%*d", 
+				"%*c %d/%d/%d %d/%d/%*d %d/%d/%*d", 
 				&f[1], &f[4], &f[0], &f[2], &f[5], &f[3], &f[6]);
 
-		_face.push_back(f[0]);
-		_face.push_back(f[1]);
-		_face.push_back(f[2]);
-		_face.push_back(f[3]);
-		_face.push_back(f[4]);
-		_face.push_back(f[5]);
-		_face.push_back(f[6]);
+		_builder.addFace(f[0] -1, f[1] -1, f[2] -1,
+						 f[3] -1, f[4] -1, f[5] -1,
+						 f[6] -1);
 	}
 
 public:
@@ -140,11 +107,13 @@ public:
 	void onLineRead(std::string line) override {
 		if (line.size() < 2) return;
 
-		if (line[0]=='f') {
+		char c = line[0];
+		if (c =='f') {
 			_addFace(line);
-		}
-		else {
-			switch (line[1]) {
+		} else if (c =='v') {
+			c = line[1];
+			
+			switch (c) {
 			case ' ':
 				_addVertex(line);
 				break;
@@ -158,12 +127,8 @@ public:
 		}
 	}
 
-	Asset atEOF() override {
-		MeshBuilder builder(_vertex.size()/3, _face.size()/3);
-		builder.vertexBuffer(_vertex.data());
-		builder.faceBuffer(_face.data());
-
-		return builder.build();
+	void* atEOF() override {
+		return _builder.build();
 	}
 };
 
@@ -171,8 +136,7 @@ int main(int, char**) {
 	RawLoader loader(new WavefronOBJLoader());
 
 	const char* path ="C:\\Users\\Usuario\\Documents\\cube.obj";
-	loader.read(path);
-	//Mesh mesh( static_cast<const Mesh&>(loader.read(path)) );
+	Mesh* mesh =static_cast<Mesh*>(loader.read(path));
 	
 	return 0;
 }
