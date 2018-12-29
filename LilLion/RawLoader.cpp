@@ -10,8 +10,8 @@ RawLoader::~RawLoader() {
 	}
 }
 
-Asset RawLoader::read(const char * path) {
-	if (not path) return Asset();
+void* RawLoader::read(const char * path) {
+	if (not path) return nullptr;
 
 	std::ifstream file;
 	file.open(path);

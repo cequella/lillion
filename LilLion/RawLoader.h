@@ -14,6 +14,6 @@ public:
 	RawLoader(RawMethod* method);
 	~RawLoader();
 
-	Asset read(const char* path);
+	void* read(const char* path);
 };
 

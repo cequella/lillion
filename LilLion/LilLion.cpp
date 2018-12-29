@@ -16,36 +16,43 @@
 #include "RawLoader.h"
 #include "Mesh.h"
 #include "MeshBuilder.h"
+#include "WavefrontObj.h"
 
 using namespace std;
 
-/*
 class EmptyScene final : public Scene {
 private:
-	Window& window = Window::self();
+	Window& window =Window::self();
+	Mesh* _mesh =nullptr;
 
-	const float colorBuffer[12] = {
-		1.0, 0.0, 0.0,
-		0.0, 1.0, 0.0,
-		0.0, 0.0, 1.0,
-		1.0, 0.0, 1.0
-	};
-	const float vertexBuffer[20] = {
-		-0.5f,  0.5f, 0.0f,
-		 0.5f,  0.5f, 0.0f,
-		 0.5f, -0.5f, 0.0f,
-		-0.5f, -0.5f, 0.0f
-	};
-	const unsigned faceBuffer[4] = {
-		0, 1, 2, 3
-	};
 public:
-	~EmptyScene() override {}
+	EmptyScene() {
+		RawLoader loader(new WavefrontObj());
+
+		const char* path = "C:\\Users\\Usuario\\Documents\\stanfordBunny.obj";
+		_mesh =static_cast<Mesh*>(loader.read(path));
+	}
+	~EmptyScene() override {
+		if (_mesh) {
+			delete _mesh;
+			_mesh =nullptr;
+		}
+	}
 
 	void update() override {}
 	void render(SDL_Surface* surface, ULONG) override {
 		glClearColor(0.0, 0.0, 0.0, 1.0);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClearDepth(1.0);
+
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_COLOR_MATERIAL);
+		glEnable(GL_LIGHTING);
+		glEnable(GL_LIGHT0);
+
+		glDepthFunc(GL_LEQUAL);
+		glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
@@ -53,12 +60,18 @@ public:
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 
-		glBegin(GL_QUADS);
-		for (unsigned i = 0; i < 4; i++) {
-			glColor3fv(colorBuffer +3*i);
-			glVertex3fv(vertexBuffer +3*i);
-		}
-		glEnd();
+		GLfloat LightAmbient[]  ={ 0.5f, 0.5f, 0.5f, 1.0f };
+		GLfloat LightDiffuse[]  ={ 1.0f, 1.0f, 1.0f, 1.0f };
+		GLfloat LightPosition[] ={ 0.0f, 0.0f, -2.0f, 1.0f };
+
+		glLightfv(GL_LIGHT0, GL_AMBIENT, LightAmbient);
+		glLightfv(GL_LIGHT0, GL_DIFFUSE, LightDiffuse);
+		glLightfv(GL_LIGHT0, GL_POSITION, LightPosition);
+
+		glPushMatrix();
+		glScalef(5.0, 5.0, 5.0);
+		_mesh->render();
+		glPopMatrix();
 
 		window.render();
 
@@ -66,113 +79,13 @@ public:
 		window.close();
 	}
 };
-*/
-
-class WavefronOBJLoader final : public RawMethod {
-private:
-	std::vector<float> _vertex  = {};
-	std::vector<float> _normal  = {};
-	std::vector<float> _mapping = {};
-	std::vector<UINT>  _face    = {};
-
-	void _addVertex(std::string line) noexcept {
-		/*
-		std::string s;
-		float v[3];
-
-		std::ostringstream stream(line);
-		stream << s << v[0] << v[1] << v[2];
-		*/
-		float v[3];
-		sscanf_s(line.c_str(), "%*s %f %f %f", &v[0], &v[1], &v[2]);
-
-		_vertex.push_back(v[0]);
-		_vertex.push_back(v[1]);
-		_vertex.push_back(v[2]);
-	}
-	void _addNormal(std::string line) noexcept {
-		/*
-		std::string s;
-		float n[3];
-
-		std::ostringstream stream(line);
-		stream << s << n[0] << n[1] << n[2];
-		*/
-		float n[3];
-		sscanf_s(line.c_str(), "%*s %f %f %f", &n[0], &n[1], &n[2]);
-
-		_normal.push_back(n[0]);
-		_normal.push_back(n[1]);
-		_normal.push_back(n[2]);
-	}
-	void _addMapping(std::string line) noexcept {
-		/*
-		std::string s;
-		float m[2];
-
-		std::ostringstream stream(line);
-		stream << s << m[0] << m[1];
-		*/
-		float m[3];
-		sscanf_s(line.c_str(), "%*s %f %f", &m[0], &m[1]);
-
-		_mapping.push_back(m[0]);
-		_mapping.push_back(m[1]);
-	}
-	void _addFace(std::string line) noexcept {
-		UINT f[7];
-		sscanf_s(line.c_str(), 
-				"%*s %d//%d//%d %d//%d//%*d %d//%d//%*d", 
-				&f[1], &f[4], &f[0], &f[2], &f[5], &f[3], &f[6]);
-
-		_face.push_back(f[0]);
-		_face.push_back(f[1]);
-		_face.push_back(f[2]);
-		_face.push_back(f[3]);
-		_face.push_back(f[4]);
-		_face.push_back(f[5]);
-		_face.push_back(f[6]);
-	}
-
-public:
-	~WavefronOBJLoader() override {}
-
-	void onLineRead(std::string line) override {
-		if (line.size() < 2) return;
-
-		if (line[0]=='f') {
-			_addFace(line);
-		}
-		else {
-			switch (line[1]) {
-			case ' ':
-				_addVertex(line);
-				break;
-			case 'n':
-				_addNormal(line);
-				break;
-			case 't':
-				_addMapping(line);
-				break;
-			}
-		}
-	}
-
-	Asset atEOF() override {
-		MeshBuilder builder(_vertex.size()/3, _face.size()/3);
-		builder.vertexBuffer(_vertex.data());
-		builder.faceBuffer(_face.data());
-
-		return builder.build();
-	}
-};
 
 int main(int, char**) {
-	RawLoader loader(new WavefronOBJLoader());
+	Window& window = Window::self();
+	EmptyScene empty;
 
-	const char* path ="C:\\Users\\Usuario\\Documents\\cube.obj";
-	loader.read(path);
-	//Mesh mesh( static_cast<const Mesh&>(loader.read(path)) );
-	
+	window.changeScene(empty);
+	window.start("Teste", 800, 600);
+
 	return 0;
 }

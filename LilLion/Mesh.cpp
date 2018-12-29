@@ -15,23 +15,6 @@ Mesh::Mesh() :
 	_face(nullptr),
 	_epf(MeshEPF::NOT_INITIALIZED){}
 
-Mesh::Mesh(const Mesh& that) : 
-	_counter{that.vertex(), that.face(), that.normal(), that.mapping()},
-	_vertex(new float[that.vertex()*3]),
-	_normal((that.normal()>0) ? new float[that.normal()*3] : nullptr),
-	_mapping((that.mapping()>0) ? new float[that.mapping()*2] : nullptr),
-	_face(new UINT[static_cast<USHORT>(that._epf) *that.face()]),
-	_epf(that._epf){
-
-	const size_t SIZEOF_FLOAT = sizeof(float);
-	const size_t SIZEOF_UINT = sizeof(UINT);
-
-	memcpy(_vertex, that._vertex, that.vertex() *3*SIZEOF_FLOAT);
-	memcpy(_face, that._face, that.face() *static_cast<USHORT>(_epf)*SIZEOF_UINT);
-	if (that.normal()) memcpy(_normal, that._normal, that.normal() *2*SIZEOF_FLOAT);
-	if (that.mapping()) memcpy(_mapping, that._mapping, that.mapping() *3*SIZEOF_FLOAT);
-}
-
 Mesh::~Mesh() {
 	_counter[0] = _counter[1] = _counter[2] = _counter[3] = 0;
 	_epf = MeshEPF::NOT_INITIALIZED;
@@ -45,14 +28,19 @@ Mesh::~Mesh() {
 void Mesh::render() const noexcept {
 	glBegin(GL_TRIANGLES);
 	for (UINT i = 0; i < face(); i++) {
-		const UINT id = i * 3;
-		const UINT v1 = _face[id];
-		const UINT v2 = _face[id +1];
-		const UINT v3 = _face[id +2];
+		const UINT id =i * 7;
+		const UINT n = _face[id];
+		const UINT v1 =_face[id +1];
+		const UINT v2 =_face[id +2];
+		const UINT v3 =_face[id +3];
+		const UINT t1 =_face[id +4];
+		const UINT t2 =_face[id +5];
+		const UINT t3 =_face[id +6];
 
-		glVertex3fv(_vertex +3*v1);
-		glVertex3fv(_vertex +3*v2);
-		glVertex3fv(_vertex +3*v3);
+		glNormal3fv(_normal +3*n);
+		glTexCoord2fv(_mapping +2*t1); glVertex3fv(_vertex +3*v1);
+		glTexCoord2fv(_mapping +2*t2); glVertex3fv(_vertex +3*v2);
+		glTexCoord2fv(_mapping +2*t3); glVertex3fv(_vertex +3*v3);
 	}
 	glEnd();
 }

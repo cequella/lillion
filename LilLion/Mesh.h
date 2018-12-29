@@ -5,9 +5,10 @@
 #define NORMAL_ID  2
 #define MAPPING_ID 3
 
-#include <gl.h>
-
+#include <iostream>
 #include <string.h>
+
+#include <gl.h>
 
 #include "CustomTypes.h"
 #include "Asset.h"
@@ -30,6 +31,7 @@ enum class MeshEPF : USHORT {
 class Mesh final : public Asset {
 private:
 	friend class MeshBuilder;
+	friend class Prop3D;
 
 	UINT    _counter[4];
 	float*  _vertex;
@@ -41,7 +43,6 @@ private:
 	void _clearPointer(void* pointer) noexcept;
 public:
 	Mesh();
-	Mesh(const Mesh&);
 	~Mesh();
 
 	UINT vertex()  const noexcept { return _counter[VERTEX_ID]; }
