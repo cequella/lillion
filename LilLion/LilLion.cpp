@@ -22,27 +22,37 @@ using namespace std;
 
 class EmptyScene final : public Scene {
 private:
-	Window& window = Window::self();
-	Mesh* _cube = nullptr;
+	Window& window =Window::self();
+	Mesh* _mesh =nullptr;
 
 public:
 	EmptyScene() {
 		RawLoader loader(new WavefrontObj());
 
-		const char* path = "C:\\Users\\Usuario\\Documents\\cube.obj";
-		_cube = static_cast<Mesh*>(loader.read(path));
+		const char* path = "C:\\Users\\Usuario\\Documents\\stanfordBunny.obj";
+		_mesh =static_cast<Mesh*>(loader.read(path));
 	}
 	~EmptyScene() override {
-		if (_cube) {
-			delete _cube;
-			_cube = nullptr;
+		if (_mesh) {
+			delete _mesh;
+			_mesh =nullptr;
 		}
 	}
 
 	void update() override {}
 	void render(SDL_Surface* surface, ULONG) override {
 		glClearColor(0.0, 0.0, 0.0, 1.0);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClearDepth(1.0);
+
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_COLOR_MATERIAL);
+		glEnable(GL_LIGHTING);
+		glEnable(GL_LIGHT0);
+
+		glDepthFunc(GL_LEQUAL);
+		glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
@@ -50,7 +60,18 @@ public:
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 
-		_cube->render();
+		GLfloat LightAmbient[]  ={ 0.5f, 0.5f, 0.5f, 1.0f };
+		GLfloat LightDiffuse[]  ={ 1.0f, 1.0f, 1.0f, 1.0f };
+		GLfloat LightPosition[] ={ 0.0f, 0.0f, -2.0f, 1.0f };
+
+		glLightfv(GL_LIGHT0, GL_AMBIENT, LightAmbient);
+		glLightfv(GL_LIGHT0, GL_DIFFUSE, LightDiffuse);
+		glLightfv(GL_LIGHT0, GL_POSITION, LightPosition);
+
+		glPushMatrix();
+		glScalef(5.0, 5.0, 5.0);
+		_mesh->render();
+		glPopMatrix();
 
 		window.render();
 

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iostream>
+
 #include "RawMethod.h"
 #include "MeshBuilder.h"
 

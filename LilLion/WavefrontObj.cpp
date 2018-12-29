@@ -28,13 +28,16 @@ void WavefrontObj::_addMapping(std::string line) noexcept {
 }
 void WavefrontObj::_addFace(std::string line) noexcept {
 	UINT f[7];
-	sscanf_s(line.c_str(),
+	sscanf_s(
+		line.c_str(),
 		"%*c %d/%d/%d %d/%d/%*d %d/%d/%*d",
 		&f[1], &f[4], &f[0], &f[2], &f[5], &f[3], &f[6]);
 
-	_builder.addFace(f[0] - 1, f[1] - 1, f[2] - 1,
+	_builder.addFace(
+		f[0] - 1, f[1] - 1, f[2] - 1,
 		f[3] - 1, f[4] - 1, f[5] - 1,
-		f[6] - 1);
+		f[6] - 1
+	);
 }
 
 void WavefrontObj::onLineRead(std::string line) {
@@ -51,9 +54,11 @@ void WavefrontObj::onLineRead(std::string line) {
 		case ' ':
 			_addVertex(line);
 			break;
+
 		case 'n':
 			_addNormal(line);
 			break;
+
 		case 't':
 			_addMapping(line);
 			break;
